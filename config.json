@@ -1,0 +1,25 @@
+{
+  "telegram": {
+    "owner_user_id": 0,
+    "group_chat_id": 0,
+    "proxy": null
+  },
+  "roles": {
+    "pm": {"label": "项目经理(Claude)", "pool": ["claude"], "aliases": ["项目经理"]},
+    "writer": {"label": "写手(Codex)", "pool": ["codex"], "aliases": ["写手"],
+               "duty": "写文档、文章、周报、方案、说明书等文字草稿", "prompt": "work_writer.md"},
+    "coder": {"label": "程序员(Codex)", "pool": ["codex"], "aliases": ["程序员"],
+              "duty": "在指定的项目目录里写代码、改 bug、跑测试", "prompt": "work_coder.md",
+              "project_dir": null}
+  },
+  "executors": {
+    "codex": {"type": "codex", "label": "Codex（ChatGPT 订阅）", "cli": "codex", "codex_home": null,
+              "timeout_sec": 3600, "model": null, "windows_sandbox": "elevated"},
+    "claude": {"type": "claude", "label": "Claude Code（订阅）", "cli": "claude", "timeout_sec": 1800,
+               "model": null, "max_turns": 40}
+  },
+  "max_review_rounds": 1,
+  "quota_cooldown_minutes": 60,
+  "progress_push_seconds": 120,
+  "simulate": []
+}
