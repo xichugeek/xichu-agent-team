@@ -8,7 +8,8 @@ if ($serviceInfo.service_id -ne 'xichugeek-studio-control-center-v1' -or
 $targetProcessId = [int]$serviceInfo.pid
 $targetProcess = Get-CimInstance Win32_Process -Filter "ProcessId = $targetProcessId"
 $expectedScript = Join-Path $PSScriptRoot 'dashboard.py'
-$matchesScript = $targetProcess -and ($targetProcess.CommandLine -match [regex]::Escape($expectedScript) -or
+$dashboardCommandLine = if ($targetProcess) { $targetProcess.CommandLine.Replace('/', '\') } else { '' }
+$matchesScript = $targetProcess -and ($dashboardCommandLine -match [regex]::Escape($expectedScript) -or
     $targetProcess.CommandLine -match '(?:^|\s|")dashboard\.py(?:\s|$|")')
 if (-not $targetProcess -or $targetProcess.Name -notmatch '^python(w)?\.exe$' -or
     -not $matchesScript) {

@@ -1,4 +1,4 @@
-"""Loopback-only HTTP service over existing Studio state; no workflow engine."""
+"""Local Studio service with opt-in, authenticated LAN viewing."""
 from __future__ import annotations
 
 import argparse
@@ -16,6 +16,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 from .pipeline import enrich
 from .agent_reader import AgentReader
 from .quota_reset import ResetManager
+from .lan_access import LanAccess
 from .status_reader import StatusReader, now
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -94,9 +95,10 @@ class Server(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
 
-    def __init__(self, port=18765, center: ControlCenter | None = None):
+    def __init__(self, port=18765, center: ControlCenter | None = None, access: LanAccess | None = None):
         self.center = center or ControlCenter()
-        super().__init__(("127.0.0.1", port), Handler)
+        self.access = access or LanAccess()
+        super().__init__(("0.0.0.0" if self.access.enabled else "127.0.0.1", port), Handler)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -110,7 +112,21 @@ class Handler(BaseHTTPRequestHandler):
         allowed = {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
         return self.client_address[0] == "127.0.0.1" and self.headers.get("Host", "").lower() in allowed
 
-    def send(self, code: int, body, content_type="application/json; charset=utf-8"):
+    def allow_read(self) -> bool:
+        if self.local_request():
+            return True
+        access = self.server.access
+        if not access.allows(self.client_address[0], self.headers.get("Host", "").lower(), self.server.server_port):
+            self.send(403, {"error": "此地址不在已启用的局域网范围内。"})
+            return False
+        status = access.authenticate(self.client_address[0], self.headers.get("Authorization", ""))
+        if status != 200:
+            headers = {"WWW-Authenticate": 'Basic realm="XichuGeek Studio - viewer", charset="UTF-8"'} if status == 401 else {"Retry-After": "60"}
+            self.send(status, {"error": "请输入局域网用户名 viewer 和访问密码。" if status == 401 else "尝试次数过多，请一分钟后重试。"}, extra_headers=headers)
+            return False
+        return True
+
+    def send(self, code: int, body, content_type="application/json; charset=utf-8", extra_headers=None):
         data = json.dumps(body, ensure_ascii=False).encode("utf-8") if not isinstance(body, bytes) else body
         self.send_response(code)
         self.send_header("Content-Type", content_type)
@@ -119,6 +135,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")
+        for name, value in (extra_headers or {}).items():
+            self.send_header(name, value)
         try:
             self.end_headers()
             self.wfile.write(data)
@@ -126,8 +144,8 @@ class Handler(BaseHTTPRequestHandler):
             pass
 
     def do_GET(self):
-        if not self.local_request():
-            return self.send(403, {"error": "仅允许本机 localhost / 127.0.0.1 访问"})
+        if not self.allow_read():
+            return
         parsed = urlsplit(self.path)
         path = unquote(parsed.path)
         try:
@@ -138,7 +156,9 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send(200, (STATIC / filename).read_bytes(), content_type)
             if path == "/api/snapshot":
                 ref = parse_qs(parsed.query).get("episode", [None])[0]
-                return self.send(200, self.server.center.snapshot(ref))
+                result = self.server.center.snapshot(ref)
+                result["studio"]["lan_read_only"] = not self.local_request()
+                return self.send(200, result)
             if path == "/api/episodes":
                 return self.send(200, {"episodes": self.server.center.reader.listing()})
             if path == "/api/site":
@@ -147,13 +167,16 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/agent":
                 ticket = parse_qs(parsed.query).get("ticket", [None])[0]
                 result = self.server.center.agents.snapshot(self.server.center.reader.listing(), ticket)
-                result["reset_token"] = self.server.center.reset_token
+                result["lan_read_only"] = not self.local_request()
+                result["reset_token"] = self.server.center.reset_token if self.local_request() else None
                 for account in result["accounts"]:
                     account["reset_operation"] = self.server.center.resets.state(account["id"])
                 return self.send(200, result)
             if path == "/api/health":
                 return self.send(200, {"service_id": SERVICE_ID, "pid": os.getpid(), "root": str(self.server.center.reader.root),
-                                       "read_only": False, "production_read_only": True, "account_reset_enabled": True,
+                                       "read_only": not self.local_request(), "production_read_only": True,
+                                       "account_reset_enabled": self.local_request(), "lan_enabled": self.server.access.enabled,
+                                       "lan_urls": self.server.access.urls(self.server.server_port) if self.local_request() else [],
                                        "health": self.server.center.reader.health()})
             if path.startswith("/api/episodes/") and path.count("/") == 3:
                 return self.send(200, self.server.center.detail(path.rsplit("/", 1)[1]))
@@ -164,8 +187,6 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(500, {"error": "无法读取状态；生产文件未修改，请核对契约格式"})
 
     def do_POST(self):
-        if not self.local_request():
-            return self.send(403, {"error": "只允许本机访问"})
         # Drain bounded request bodies before rejecting an origin/header. Closing
         # a Windows socket with unread input can discard the intended 4xx reply.
         try:
@@ -180,6 +201,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.connection.settimeout(previous_timeout)
         except (ValueError, OSError):
             return self.send(400, {"error": "无法读取请求内容。"})
+        if not self.local_request():
+            return self.send(403, {"error": "局域网访问仅供查看；请在电脑本机执行此操作。"})
         parsed = urlsplit(self.path)
         path = unquote(parsed.path)
         expected_origin = "http://" + self.headers["Host"]
@@ -226,18 +249,29 @@ class Handler(BaseHTTPRequestHandler):
 def main() -> int:
     parser = argparse.ArgumentParser(description="XichuGeek Studio · 本地制作看板与账号额度")
     parser.add_argument("--port", type=int, default=18765)
-    parser.add_argument("--studio-root", type=Path, default=ROOT, help="Read an existing Studio workspace; keep its private files outside this repository")
+    parser.add_argument("--studio-root", type=Path, default=ROOT, help="Read an existing Studio workspace; keep private data outside this repository")
+    parser.add_argument("--enable-lan", action="append", metavar="IP/PREFIX", help="Opt in to password-protected read-only LAN viewing for your own interface, e.g. 192.168.50.10/24")
     parser.add_argument("--open", action="store_true", help="启动后打开默认浏览器")
     args = parser.parse_args()
     if not 1024 <= args.port <= 65535:
         parser.error("端口必须为 1024–65535")
     try:
-        server = Server(args.port, ControlCenter(args.studio_root.expanduser().resolve()))
+        studio_root = args.studio_root.expanduser().resolve()
+        if args.enable_lan:
+            password = LanAccess.configure(studio_root, args.enable_lan)
+            print(f"LAN username: viewer\nLAN password (keep private): {password}", flush=True)
+        access = LanAccess.load(studio_root)
+        server = Server(args.port, ControlCenter(studio_root), access=access)
+    except (ValueError, TypeError):
+        print("局域网访问配置无效，请检查 output/control_center/lan-access.local.json。", flush=True)
+        return 1
     except OSError:
         print(f"无法绑定 127.0.0.1:{args.port}；端口可能已占用，可用 --port 指定其他端口。", flush=True)
         return 1
     url = f"http://127.0.0.1:{server.server_port}"
     print(f"XichuGeek Studio Control Center\nRunning at:\n{url}\nStudio read-only / Manual account resets · Ctrl+C stops the service", flush=True)
+    for lan_url in access.urls(server.server_port):
+        print(f"LAN read-only (username viewer, password required): {lan_url}", flush=True)
     if args.open:
         webbrowser.open(url)
     try:

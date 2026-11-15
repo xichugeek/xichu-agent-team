@@ -1,7 +1,7 @@
 "use strict";
 const $ = id => document.getElementById(id);
 let selected = new URLSearchParams(location.search).get("episode");
-let current = null, fetching = false, lastShape = "", episodeShape = "";
+let current = null, fetching = false, lastShape = "", episodeShape = "", lanReadOnly = false;
 const escapeHTML = value => String(value ?? "UNKNOWN").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const formatTime = value => { if (!value) return "UNKNOWN"; const d = new Date(value); return Number.isNaN(d.getTime()) ? "UNKNOWN" : new Intl.DateTimeFormat("zh-CN",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(d); };
 const tone = status => {
@@ -53,8 +53,8 @@ function renderValidate(ep) {
   $("validate-status").dataset.tone = tone(v.status);
   $("validate-note").textContent = v.checked_at ? `最近检查 ${formatTime(v.checked_at)}${v.status === "STALE" ? " · 文件已变化，请重检" : " · 仅表示文件契约校验结果"}` : v.status === "RUNNING" ? "正在只读校验；完成后自动刷新显示结果。" : "尚未运行。可手动检查当前文件、依赖与 Gate 一致性。";
   $("validate-issues").innerHTML = (v.issues || []).map(issue => `<li>${escapeHTML(issue)}</li>`).join("");
-  $("run-validate").disabled = v.status === "RUNNING";
-  $("run-validate").textContent = v.status === "RUNNING" ? "Validate 正在运行…" : "运行只读 Validate";
+  $("run-validate").disabled = lanReadOnly || v.status === "RUNNING";
+  $("run-validate").textContent = lanReadOnly ? "请在电脑本机运行 Validate" : v.status === "RUNNING" ? "Validate 正在运行…" : "运行只读 Validate";
 }
 function renderHealth(health) {
   $("health").innerHTML = health.map(item => `<div class="health-row"><span class="health-name">${escapeHTML(item.name)}${item.detail ? `<small>${escapeHTML(item.detail)}</small>` : ""}</span><span class="health-value ${["OK","FOUND","SOURCE_FOUND"].includes(item.status) ? "ok" : ["MISSING","NOT_FOUND"].includes(item.status) ? "missing" : ""}">${escapeHTML(item.status)}</span></div>`).join("");
@@ -63,6 +63,8 @@ function renderArtifacts(ep) {
   $("artifacts").innerHTML = ep.deliveries.map(item => `<tr data-artifact="${escapeHTML(item.id)}"><td><div class="file-label">${escapeHTML(item.label)}</div><div class="file-path">${escapeHTML(item.path ?? "UNKNOWN · 无选定输出")}</div></td><td class="${item.exists === true ? "exists-yes" : item.exists === false ? "exists-no" : "exists-unknown"}">${item.exists === true ? "存在" : item.exists === false ? "不存在" : "UNKNOWN"}</td><td>${pill(item.status)}</td><td>${formatTime(item.modified_at)}</td><td>${size(item.size)}</td></tr>`).join("");
 }
 function render(snapshot) {
+  lanReadOnly = Boolean(snapshot.studio.lan_read_only);
+  $("lan-mode").hidden = !lanReadOnly;
   current = snapshot.episode;
   document.dispatchEvent(new CustomEvent("studio-snapshot", {detail: snapshot}));
   renderEpisodes(snapshot.episodes);
@@ -110,7 +112,7 @@ function render(snapshot) {
     $("episode-directory").textContent = current.directory;
     lastShape = shape;
   }
-  $("scan-time").textContent = `最近读取 ${formatTime(snapshot.studio.scanned_at)} · 本机只读`;
+  $("scan-time").textContent = `最近读取 ${formatTime(snapshot.studio.scanned_at)} · ${lanReadOnly ? "局域网只读" : "本机只读"}`;
 }
 async function refresh() {
   if (fetching) return;
@@ -147,7 +149,7 @@ $("episode-picker").addEventListener("change",()=> {
 });
 $("refresh").addEventListener("click",refresh);
 $("run-validate").addEventListener("click",async () => {
-  if (!current) return;
+  if (!current || lanReadOnly) return;
   $("run-validate").disabled = true;
   try {
     const response = await fetch(`/api/episodes/${encodeURIComponent(current.ref)}/validate`,{method:"POST",headers:{"X-Studio-Request":"validate"},body:"{}"});

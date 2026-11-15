@@ -24,7 +24,7 @@
       }).join("");
       const credit = a.reset_credits, count = credit?.available_count, operation = a.reset_operation;
       const pending = operation?.status === "unknown", running = operation?.status === "running", unavailable = operation?.status === "unavailable";
-      const canReset = !resetSending && (pending || (a.status === "ok" && count > 0 && a.email)) && !running && !unavailable;
+      const canReset = !data.lan_read_only && !resetSending && (pending || (a.status === "ok" && count > 0 && a.email)) && !running && !unavailable;
       const expires = credit?.credits?.[0]?.expires_at;
       const resetArea = `<div class="account-reset"><div><span>可用重置机会</span><strong>${count == null ? "未知" : esc(count)+" 次"}</strong></div>${expires ? `<p>最近到期 ${formatTime(expires)}</p>` : ""}<button class="reset-button" data-reset-account="${esc(a.id)}" type="button" ${canReset ? "" : "disabled"}>${running ? "正在重置…" : pending ? "重试确认重置结果" : "手动重置额度"}</button>${operation?.message ? `<p class="reset-operation" data-state="${esc(operation.status)}">${esc(operation.message)}</p>` : count === 0 ? '<p>当前没有可用重置机会</p>' : count == null ? '<p>等待官方返回可用次数</p>' : ""}</div>`;
       return `<article class="account-card"><div class="team-card-top"><h3>${esc(a.label)}</h3>${badge(status,color)}</div><p class="account-email">${esc(a.email || (a.status === "loading" ? "正在核对账号身份…" : "账号身份暂不可读"))}</p><p class="account-role">${a.primary_roles.map(r=>esc(roleLabels[r] || r)).join(" / ") || "备用账号"}${a.plan ? " · "+esc(a.plan.toUpperCase()) : ""}</p>${windows || '<p class="quota-empty">'+(a.status === "loading" ? "正在获取官方额度…" : "暂无可用额度读数")+'</p>'}${resetArea}${a.message ? `<p class="account-warning">${esc(a.message)}</p>` : ""}<p class="account-time">${a.checked_at ? "最近成功 "+formatTime(a.checked_at) : "尚未成功读取"}${a.refreshing && a.checked_at ? " · 更新中" : ""}</p></article>`;
@@ -33,7 +33,7 @@
 
   function openReset(id) {
     const account = data?.accounts.find(a=>a.id === id);
-    if (!account || resetSending) return;
+    if (!account || resetSending || data.lan_read_only) return;
     const previous = account.reset_operation;
     const retry = previous?.status === "unknown";
     if (!retry && (account.status !== "ok" || !(account.reset_credits?.available_count > 0))) return;
