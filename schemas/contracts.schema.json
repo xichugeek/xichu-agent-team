@@ -1,0 +1,12 @@
+{
+  "schema_version": "0.1",
+  "description": "Machine-checked CSV contract descriptor; scripts/qa.py enforces required columns and enum values.",
+  "shot_modes": ["live", "replay", "diagram", "generated_visual"],
+  "evidence_levels": ["current_code_direct", "current_ui_or_export", "legacy_reference", "unverified"],
+  "csv_headers": {
+    "evidence_manifest.csv": ["claim_id", "claim", "source", "source_version_hash", "evidence_level", "confidence", "privacy", "notes"],
+    "shot_plan.csv": ["shot_id", "script_id", "mode", "status", "required", "file", "evidence_ids", "privacy", "notes"],
+    "asset_manifest.csv": ["asset_id", "kind", "file", "source", "license", "privacy", "status", "sha256", "notes"],
+    "voice_manifest.csv": ["segment_id", "text_hash", "voice", "parameters_json", "cache_key", "file", "codec", "sample_rate", "status", "caption_text", "notes"]
+  }
+}

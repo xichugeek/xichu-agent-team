@@ -9,8 +9,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 class FakeTelegram:
     def __init__(self, bots: dict | None = None):
-        """bots: {token: username}。默认一个机器人 TEST=team_test_bot。"""
-        bots = bots or {"TEST": "team_test_bot"}
+        """bots: {token: username}。默认一个机器人 TEST=xichu_test_bot。"""
+        bots = bots or {"TEST": "xichu_test_bot"}
         self.bots = {tok: {"id": 900 + i, "is_bot": True, "username": u, "first_name": u,
                            "can_read_all_group_messages": True} for i, (tok, u) in enumerate(bots.items())}
         self.updates: dict[str, list] = {tok: [] for tok in bots}

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>XichuGeek Studio · Control Center</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/studio.css">
+  <script src="/static/navigation.js" defer></script>
+  <script src="/static/studio.js" defer></script>
+  <script src="/static/agent.js" defer></script>
+  <script src="/static/site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="XichuGeek Studio 首页"><span class="brand-symbol">XG<span>●</span></span><span>XichuGeek<span class="brand-sub">STUDIO CONTROL</span></span></a>
+    <div class="workspace-label"><span class="live-dot"></span> 本地工作区</div>
+    <nav class="workspace-nav" aria-label="工作区导航">
+      <a href="/?view=overview" data-view="overview" aria-current="page"><span class="nav-icon" aria-hidden="true">▦</span><span>总览</span></a>
+      <a href="/?view=tickets" data-view="tickets"><span class="nav-icon" aria-hidden="true">↗</span><span>电报工单</span><small id="nav-ticket-count">—</small></a>
+      <a href="/?view=accounts" data-view="accounts"><span class="nav-icon" aria-hidden="true">◈</span><span>账号额度</span><small id="nav-account-count">—</small></a>
+      <a href="/?view=studio" data-view="studio"><span class="nav-icon" aria-hidden="true">▤</span><span>视频制作</span><small id="nav-episode-count">—</small></a>
+      <a href="/?view=site" data-view="site"><span class="nav-icon" aria-hidden="true">⌘</span><span>官网运维</span><small id="nav-site-count">—</small></a>
+    </nav>
+    <div class="sidebar-footer"><span class="shield-icon">◈</span><div>制作状态只读<span>人工审核决定发布</span><span id="sidebar-service">正在连接…</span></div></div>
+  </aside>
+  <main id="main">
+    <header class="page-header">
+      <div><p class="eyebrow">XICHUGEEK STUDIO / CONTROL CENTER</p><h1 id="view-title" tabindex="-1">工作区总览</h1><p class="header-sub" id="view-subtitle">任务、制作与账号状态，一眼看清。</p></div>
+      <div class="header-actions"><label class="auto-label"><input id="auto-refresh" type="checkbox" checked> 自动刷新 · 4s</label><button id="refresh" type="button"><span aria-hidden="true">↻</span> 刷新</button></div>
+    </header>
+    <div id="connection-error" class="error-banner" role="alert" hidden></div>
+    <div id="view-overview" data-workspace-view="overview">
+      <div class="overview-counts" id="overview-counts"><div><span>执行中</span><strong>—</strong></div><div><span>等待人工</span><strong>—</strong></div><div><span>排队中</span><strong>—</strong></div><div><span>异常工单</span><strong>—</strong></div></div>
+      <div class="overview-columns">
+        <section class="home-card" aria-labelledby="home-production-title"><div class="home-card-heading"><h2 id="home-production-title">当前期号</h2><a href="/?view=studio" data-view="studio">查看制作 →</a></div><div id="home-production"><p class="muted">正在读取制作记录…</p></div></section>
+        <section class="home-card" aria-labelledby="home-tickets-title"><div class="home-card-heading"><h2 id="home-tickets-title">最近工单</h2><a href="/?view=tickets" data-view="tickets">全部工单 →</a></div><div id="home-tickets"><p class="muted">正在读取电报工单…</p></div></section>
+      </div>
+      <section class="home-card home-accounts" aria-labelledby="home-accounts-title"><div class="home-card-heading"><h2 id="home-accounts-title">账号概况</h2><a href="/?view=accounts" data-view="accounts">额度与重置 →</a></div><div id="home-accounts" class="home-account-grid"><p class="muted">正在读取账号信息…</p></div></section>
+      <p class="home-scan-time" id="home-scan-time">正在连接本地工作区…</p>
+    </div>
+    <section id="view-accounts" data-workspace-view="accounts" class="section-block account-section" aria-labelledby="accounts-heading" hidden>
+      <div class="section-header"><div><p class="eyebrow">CODEX A / B / C</p><h2 id="accounts-heading">账号剩余额度</h2></div><span class="section-note">官方实时读取 · 缓存 5 分钟</span></div>
+      <div id="account-grid" class="account-grid"><p class="muted">正在读取账号信息…</p></div>
+      <p class="small-note">显示各计费窗口的剩余百分比，无法换算为固定任务次数。读取失败会保留最近值并标记过期。</p>
+      <p id="reset-feedback" class="reset-feedback" role="status" hidden></p>
+    </section>
+    <section id="view-tickets" data-workspace-view="tickets" class="section-block ticket-section" aria-labelledby="tickets-heading" hidden>
+      <div class="section-header"><div><p class="eyebrow">TELEGRAM WORK ORDERS</p><h2 id="tickets-heading">电报工单与执行进度</h2></div><span class="status-pill" id="scheduler-state">连接中</span></div>
+      <p id="agent-note" class="section-note">正在连接电报工单数据源…</p>
+      <div id="ticket-counts" class="ticket-counts"></div>
+      <div class="ticket-filters">
+        <label>搜索工单<input id="ticket-search" type="search" placeholder="工单号、内容或期号" autocomplete="off"></label>
+        <label>状态<select id="ticket-state"><option value="all">全部状态</option><option value="active">待处理 / 执行中</option><option value="running">执行中</option><option value="queued">排队中</option><option value="done">完成 / 草稿就绪</option><option value="failed">失败 / 质检未过</option><option value="cancelled">已取消</option></select></label>
+        <label class="episode-filter"><input id="ticket-episode-only" type="checkbox"> 仅看当前 Episode</label>
+      </div>
+      <div class="ticket-workspace"><div><p id="ticket-list-note" class="small-note"></p><div id="ticket-list" class="ticket-list" aria-label="电报工单列表"></div></div><div id="ticket-detail" class="ticket-detail"><p class="muted">选择工单查看执行记录。</p></div></div>
+      <p class="small-note" id="agent-scan-time"></p>
+    </section>
+    <div id="view-site" data-workspace-view="site" hidden>
+      <section class="site-context" aria-label="官网工作区与执行资源"><div><span class="eyebrow">OFFICIAL WEBSITE</span><strong id="site-project-state">正在读取官网工作区…</strong><p id="site-project-path"></p></div><div><span class="eyebrow">EXECUTION POOL</span><strong id="site-pool">正在读取账号池…</strong><a href="/?view=accounts" data-view="accounts">查看账号额度 →</a></div></section>
+      <div id="site-counts" class="overview-counts site-counts"></div>
+      <section class="section-block site-orders" aria-labelledby="site-orders-heading">
+        <div class="section-header"><div><p class="eyebrow">WEBSITE OPERATIONS</p><h2 id="site-orders-heading">官网工单与交付</h2></div><span class="status-pill" id="site-service">连接中</span></div>
+        <p id="site-note" class="section-note">正在读取官网运维记录…</p>
+        <div class="ticket-filters"><label>搜索官网任务<input id="site-search" type="search" placeholder="工单号、内容或期号" autocomplete="off"></label><label>状态<select id="site-filter"><option value="all">全部官网任务</option><option value="active">待处理 / 执行中</option><option value="done">交付就绪</option><option value="failed">异常任务</option></select></label><label class="episode-filter"><input id="site-episode-only" type="checkbox"><span id="site-episode-label">仅看当前期号</span></label></div>
+        <div class="ticket-workspace"><div><p id="site-list-note" class="small-note"></p><div id="site-ticket-list" class="ticket-list" aria-label="官网工单列表"></div></div><div id="site-ticket-detail" class="ticket-detail"><p class="muted">选择官网任务查看进度与交付。</p></div></div>
+        <p id="site-scan-time" class="small-note"></p>
+      </section>
+    </div>
+    <div id="view-studio" data-workspace-view="studio" hidden>
+    <section class="studio-selector" aria-label="选择制作期号">
+      <label for="episode-picker">查看期号</label><select id="episode-picker"><option value="">正在读取期号…</option></select>
+      <details class="episode-browser"><summary>浏览全部 <span id="episode-count">—</span> 期</summary><nav id="episode-list" aria-label="Episode 列表"><p class="muted">正在读取本地状态…</p></nav><details class="test-episodes"><summary>合成测试 Episodes <span id="test-count"></span></summary><nav id="test-list" aria-label="测试 Episode 列表"></nav></details></details>
+    </section>
+    <nav class="studio-tabs" aria-label="制作详情分组"><a href="/?view=studio&panel=overview" data-panel="overview">制作概览</a><a href="/?view=studio&panel=flow" data-panel="flow">制作流程</a><a href="/?view=studio&panel=team" data-panel="team">团队与审核</a><a href="/?view=studio&panel=artifacts" data-panel="artifacts">交付文件</a><a href="/?view=studio&panel=checks" data-panel="checks">检查与诊断</a></nav>
+    <div id="loading" class="loading">正在连接本地 Studio…</div>
+    <div id="content" hidden>
+      <div data-studio-panel="overview">
+      <section class="episode-overview" aria-labelledby="episode-title">
+        <div class="overview-top"><span class="episode-kicker" id="episode-kicker">CURRENT EPISODE</span><span class="status-pill" id="overall-status"></span></div>
+        <h2 id="episode-title"></h2>
+        <div id="episode-tickets" class="episode-ticket-links"></div>
+        <div class="overview-metrics">
+          <div class="metric"><span>当前阶段</span><strong id="current-stage"></strong></div>
+          <div class="metric"><span>当前负责岗位</span><strong id="current-role"></strong></div>
+          <div class="metric progress-metric"><span>阶段进度 <small>辅助值</small></span><strong id="progress-value"></strong><progress id="progress" max="100" value="0"></progress></div>
+        </div>
+        <div class="next-action"><span class="next-icon" aria-hidden="true">↗</span><div><p class="eyebrow">NEXT ACTION</p><p id="next-action"></p></div></div>
+        <div class="overview-foot"><span id="last-updated"></span><span id="validate-overview"></span><span id="blocker-count"></span><span id="obsolete-count"></span></div>
+      </section>
+      <div class="delivery-strip" id="delivery-strip"></div>
+      </div>
+      <div data-studio-panel="flow" hidden>
+      <section class="section-block" aria-labelledby="pipeline-heading">
+        <div class="section-header"><div><p class="eyebrow">PRODUCTION FLOW</p><h2 id="pipeline-heading">制作 Pipeline</h2></div><div class="pipeline-legend"><span class="legend green">有效交付</span><span class="legend blue">当前步骤</span><span class="legend orange">待复核</span><span class="legend red">阻塞 / 失效</span><span class="legend purple">人工节点</span></div></div>
+        <p class="section-note">当前步骤由文件契约推导；蓝色标记表示待接续位置，不代表机器人正在运行。</p>
+        <div id="pipeline" class="pipeline" aria-label="制作流程节点"></div>
+        <details class="progress-explanation"><summary>进度如何计算？</summary><p>按 12 个阶段加权，录制 / 视觉 / 配音各占 10%。已批准计满额，其他状态按完成程度折算；失效、阻塞及 UNKNOWN 计 0。进度不批准 Gate，也不表示已发布。</p><div id="progress-breakdown"></div></details>
+      </section>
+      </div>
+      <div data-studio-panel="team" hidden>
+      <section class="section-block" aria-labelledby="team-heading">
+        <div class="section-header"><div><p class="eyebrow">ONE EPISODE · EIGHT ROLES</p><h2 id="team-heading">Studio Team</h2></div><span class="section-note">Codex Edition · 单会话岗位接力</span></div>
+        <div class="team-grid" id="team"></div>
+      </section>
+      <section class="section-block gates-section" aria-labelledby="gate-heading">
+        <div class="section-header"><div><p class="eyebrow">HUMAN IN THE LOOP</p><h2 id="gate-heading">人工审核节点</h2></div><span class="section-note">只显示状态 · 没有自动批准</span></div>
+        <div class="gates-grid" id="gates"></div>
+      </section>
+      </div>
+      <div data-studio-panel="checks" hidden>
+      <div class="inspection-grid">
+        <section class="section-block validate-panel" aria-labelledby="validate-heading">
+          <div class="section-header"><h2 id="validate-heading">Studio Validate</h2><span id="validate-status" class="status-pill"></span></div>
+          <p id="validate-note" class="section-note"></p><ul id="validate-issues" class="issue-list"></ul>
+          <button id="run-validate" class="primary-button" type="button">运行只读 Validate</button>
+          <p class="small-note">调用现有 Studio 校验器；本次手动检查会计算引用媒体指纹。普通刷新仅读取状态和 metadata。</p>
+        </section>
+        <section class="section-block" aria-labelledby="health-heading"><div class="section-header"><h2 id="health-heading">Studio Health</h2><span class="section-note">实测范围内显示</span></div><div id="health" class="health-list"></div></section>
+      </div>
+      <details class="section-block diagnostic-details"><summary>状态来源与待处理事项 <span id="warning-count"></span></summary><div id="diagnostics"></div><p class="small-note">事实审查由 facts / evidence 产物批准状态推导；其余 3 个 Gate 直接读取 production_status.yaml。面板不调用 sync，不修改制作状态、素材或剪映草稿。</p><p class="directory" id="episode-directory"></p></details>
+      </div>
+      <div data-studio-panel="artifacts" hidden>
+      <section class="section-block" aria-labelledby="artifacts-heading">
+        <div class="section-header"><div><p class="eyebrow">DELIVERY INVENTORY</p><h2 id="artifacts-heading">Artifacts / 实际交付文件</h2></div><span class="section-note">只显示 metadata，不提供正文</span></div>
+        <div class="table-wrap"><table><thead><tr><th scope="col">交付项 / 路径</th><th scope="col">存在</th><th scope="col">状态</th><th scope="col">最后修改</th><th scope="col">大小</th></tr></thead><tbody id="artifacts"></tbody></table></div>
+      </section>
+      </div>
+      <footer class="page-footer"><span>XICHUGEEK STUDIO · LOCAL CONTROL CENTER</span><span id="scan-time"></span></footer>
+    </div>
+    </div>
+  </main>
+  <dialog id="reset-dialog" aria-labelledby="reset-dialog-title" aria-describedby="reset-dialog-copy">
+    <div class="reset-dialog-body"><p class="eyebrow">CODEX QUOTA RESET</p><h2 id="reset-dialog-title">确认重置额度</h2><p id="reset-dialog-account"></p><p id="reset-dialog-copy"></p><p id="reset-dialog-credit" class="small-note"></p><div class="reset-dialog-actions"><button id="reset-cancel" type="button" autofocus>取消</button><button id="reset-confirm" class="primary-button" type="button">使用 1 次重置机会</button></div></div>
+  </dialog>
+</body>
+</html>

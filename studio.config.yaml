@@ -1,0 +1,56 @@
+version: '0.1'
+episodes_dir: Episodes
+test_episode: TEST_P0
+media:
+  ffmpeg_path: tools/ffmpeg-9.0.2-essentials_build/bin/ffmpeg.exe
+  ffprobe_path: tools/ffmpeg-9.0.2-essentials_build/bin/ffprobe.exe
+  target_width: 1920
+  target_height: 1080
+  target_fps: 60
+  target_audio_sample_rate: 48000
+  test_seconds: 10
+  desktop_audio_rms_fail_dbfs: -70.0
+  black_luma_warning: 10.0
+gates:
+  - SCRIPT_APPROVAL
+  - FINAL_REVIEW
+  - PUBLISH_APPROVAL
+status_values:
+  - planned
+  - blocked
+  - ready
+  - tested
+  - captured
+  - selected
+  - rendered
+  - review_required
+  - approved
+  - rejected
+  - obsolete
+  - published
+dependencies:
+  brief: []
+  facts: [brief]
+  evidence: [brief]
+  script: [facts, evidence]
+  shots: [script]
+  assets: [shots]
+  voice: [script]
+  captions: [script, voice]
+  timeline: [shots, assets, voice, captions]
+  render: [timeline]
+  qa: [render, facts, evidence, shots]
+  release: [qa]
+paths:
+  brief: brief.md
+  facts: facts.md
+  evidence: evidence_manifest.csv
+  script: script_locked.md
+  shots: shot_plan.csv
+  assets: asset_manifest.csv
+  voice: voice_manifest.csv
+  captions: captions.srt
+  timeline: timeline_manifest.json
+  render: render_report.json
+  qa: qa_report.md
+  release: release_gate.md

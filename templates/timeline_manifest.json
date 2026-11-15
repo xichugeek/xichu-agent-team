@@ -1,0 +1,8 @@
+{
+  "schema_version": "0.1",
+  "shots": [],
+  "subtitle_safe_zone": {"x": 0.05, "y": 0.78, "width": 0.90, "height": 0.17},
+  "critical_regions": [],
+  "main_audio": null,
+  "captions": "captions.srt"
+}

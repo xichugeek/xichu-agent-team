@@ -1,0 +1,20 @@
+{
+  "episode": "SYNTHETIC",
+  "title": "合成模板标题（非真实文章）",
+  "slug": "episode-synthetic",
+  "video_id": "AAAAAAAAAAA",
+  "video_url": "https://www.youtube.com/watch?v=AAAAAAAAAAA",
+  "duration": null,
+  "upload_date": null,
+  "excerpt": "合成模板，仅用于调度器离线测试。",
+  "category_ids": [],
+  "tags": ["合成"],
+  "source": null,
+  "demo": null,
+  "series": null,
+  "series_index": null,
+  "episode_type": "short",
+  "prev_slug": null,
+  "transcript": true,
+  "article_url": null
+}

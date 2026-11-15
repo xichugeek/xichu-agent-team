@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "XichuGeek Studio timeline_manifest.json",
+  "type": "object",
+  "required": ["schema_version", "shots", "subtitle_safe_zone", "critical_regions", "main_audio", "captions"],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "shots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["shot_id", "file", "status"],
+        "properties": {
+          "shot_id": {"type": "string"},
+          "file": {"type": "string"},
+          "status": {"enum": ["planned", "tested", "captured", "selected", "approved", "obsolete"]}
+        }
+      }
+    },
+    "subtitle_safe_zone": {"$ref": "#/$defs/box"},
+    "critical_regions": {"type": "array", "items": {"type": "object", "required": ["id", "start", "end", "box"], "properties": {"id": {"type": "string"}, "start": {"type": "number", "minimum": 0}, "end": {"type": "number", "minimum": 0}, "box": {"$ref": "#/$defs/box"}}}},
+    "main_audio": {"type": ["string", "null"]},
+    "captions": {"type": "string"}
+  },
+  "$defs": {"box": {"type": "object", "required": ["x", "y", "width", "height"], "properties": {"x": {"type": "number", "minimum": 0, "maximum": 1}, "y": {"type": "number", "minimum": 0, "maximum": 1}, "width": {"type": "number", "minimum": 0, "maximum": 1}, "height": {"type": "number", "minimum": 0, "maximum": 1}}}}
+}

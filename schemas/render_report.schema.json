@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "XichuGeek Studio render_report.json",
+  "type": "object",
+  "required": ["schema_version", "status", "output", "inputs", "probe", "full_decode", "warnings"],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "status": {"enum": ["not_rendered", "rendered", "failed"]},
+    "output": {"type": ["string", "null"]},
+    "inputs": {"type": "array", "items": {"type": "object", "required": ["file", "sha256"], "properties": {"file": {"type": "string"}, "sha256": {"type": "string"}}}},
+    "probe": {"type": ["object", "null"]},
+    "full_decode": {"type": ["boolean", "null"]},
+    "warnings": {"type": "array", "items": {"type": "string"}}
+  }
+}

@@ -4,22 +4,73 @@
     "group_chat_id": 0,
     "proxy": null
   },
+  "data_dir": "runtime",
+  "studio_root": "C:/Projects/YourStudio",
+  "site_repo": "C:/Projects/YourWebsite",
+  "forge_root": "C:/Projects/YourWebsiteOperations",
+  "video_mode": "synthetic",
+  "site_mode": "draft",
   "roles": {
-    "pm": {"label": "项目经理(Claude)", "pool": ["claude"], "aliases": ["项目经理"]},
-    "writer": {"label": "写手(Codex)", "pool": ["codex"], "aliases": ["写手"],
-               "duty": "写文档、文章、周报、方案、说明书等文字草稿", "prompt": "work_writer.md"},
-    "coder": {"label": "程序员(Codex)", "pool": ["codex"], "aliases": ["程序员"],
-              "duty": "在指定的项目目录里写代码、改 bug、跑测试", "prompt": "work_coder.md",
-              "project_dir": null}
+    "pm": {
+      "label": "项目经理(Codex)",
+      "pool": [
+        "codex_a"
+      ]
+    },
+    "video": {
+      "label": "视频制作(Codex)",
+      "pool": [
+        "codex_a"
+      ]
+    },
+    "site": {
+      "label": "官网运维(Codex)",
+      "pool": [
+        "codex_a"
+      ]
+    }
   },
   "executors": {
-    "codex": {"type": "codex", "label": "Codex（ChatGPT 订阅）", "cli": "codex", "codex_home": null,
-              "timeout_sec": 3600, "model": null, "windows_sandbox": "elevated"},
-    "claude": {"type": "claude", "label": "Claude Code（订阅）", "cli": "claude", "timeout_sec": 1800,
-               "model": null, "max_turns": 40}
+    "codex_a": {
+      "type": "codex",
+      "label": "Codex A",
+      "cli": "auto:codex-app",
+      "codex_home": null,
+      "enabled": true,
+      "model": null,
+      "model_reasoning_effort": "high",
+      "windows_sandbox": "unelevated",
+      "timeout_sec": 3600
+    },
+    "codex_b": {
+      "type": "codex",
+      "label": "Codex B",
+      "cli": "auto:codex-app",
+      "codex_home": "C:/CodexAccounts/B",
+      "enabled": false,
+      "model": null,
+      "model_reasoning_effort": "high",
+      "windows_sandbox": "unelevated",
+      "timeout_sec": 3600
+    },
+    "codex_c": {
+      "type": "codex",
+      "label": "Codex C",
+      "cli": "auto:codex-app",
+      "codex_home": "C:/CodexAccounts/C",
+      "enabled": false,
+      "model": null,
+      "model_reasoning_effort": "high",
+      "windows_sandbox": "unelevated",
+      "timeout_sec": 3600
+    }
   },
-  "max_review_rounds": 1,
-  "quota_cooldown_minutes": 60,
-  "progress_push_seconds": 120,
+  "native_sandbox": "workspace-write",
+  "auto_review": false,
+  "send_handoff_documents": false,
+  "context_boot_max_chars": 18000,
+  "stage_reasoning_effort": {
+    "triage": "medium"
+  },
   "simulate": []
 }

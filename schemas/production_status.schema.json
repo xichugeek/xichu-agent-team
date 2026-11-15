@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "XichuGeek Studio production_status.yaml",
+  "type": "object",
+  "required": ["schema_version", "episode_id", "title", "test_only", "created_at", "artifacts", "gates", "history"],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "episode_id": {"type": "string", "pattern": "^(TEST_[A-Z0-9_]+|[0-9]{3})$"},
+    "title": {"type": "string", "minLength": 1},
+    "test_only": {"type": "boolean"},
+    "created_at": {"type": "string"},
+    "artifacts": {
+      "type": "object",
+      "required": ["brief", "facts", "evidence", "script", "shots", "assets", "voice", "captions", "timeline", "render", "qa", "release"],
+      "additionalProperties": {"$ref": "#/$defs/artifact"}
+    },
+    "gates": {
+      "type": "object",
+      "required": ["SCRIPT_APPROVAL", "FINAL_REVIEW", "PUBLISH_APPROVAL"],
+      "additionalProperties": {"$ref": "#/$defs/gate"}
+    },
+    "history": {"type": "array", "items": {"type": "object"}}
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "required": ["path", "status", "sha256", "input_hashes", "updated_at"],
+      "properties": {
+        "path": {"type": "string"},
+        "status": {"enum": ["planned", "blocked", "ready", "tested", "captured", "selected", "rendered", "review_required", "approved", "rejected", "obsolete", "published"]},
+        "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "input_hashes": {"type": "object", "additionalProperties": {"type": ["string", "null"]}},
+        "updated_at": {"type": "string"}
+      }
+    },
+    "gate": {
+      "type": "object",
+      "required": ["status", "actor", "evidence", "at"],
+      "properties": {
+        "status": {"enum": ["pending", "approved"]},
+        "actor": {"type": ["string", "null"]},
+        "evidence": {"type": ["string", "null"]},
+        "at": {"type": ["string", "null"]},
+        "sha256": {"type": "string"}
+      }
+    }
+  }
+}

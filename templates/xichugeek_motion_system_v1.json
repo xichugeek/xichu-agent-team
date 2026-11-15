@@ -1,0 +1,522 @@
+{
+  "kind": "design_template",
+  "version": "1.0",
+  "name": "XichuGeek Motion System",
+  "implementation_state": "design_only",
+  "format": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 60
+  },
+  "contract": {
+    "shotModes": [
+      "live",
+      "replay",
+      "diagram",
+      "generated_visual"
+    ],
+    "extends_existing_studio_contracts": true,
+    "adds_gate": false,
+    "adds_artifact_state": false
+  },
+  "theme": {
+    "background": "#0B0F14",
+    "surface": "#151C25",
+    "foreground": "#F3F5F7",
+    "muted": "#8C98A8",
+    "structure": "#3B495B",
+    "active": "#72C9DB",
+    "pass": "#9CD3B0",
+    "spacingUnit": 8,
+    "margin": 96,
+    "titleSize": 72,
+    "bodySize": 40,
+    "codeSize": 32,
+    "sourceSize": 26,
+    "subtitleSafeRect": {
+      "x": 96,
+      "y": 900,
+      "width": 1728,
+      "height": 140
+    },
+    "contentRect": {
+      "x": 96,
+      "y": 96,
+      "width": 1728,
+      "height": 764
+    }
+  },
+  "motion": {
+    "entryFrames": 30,
+    "exitFrames": 20,
+    "staggerFrames": 8,
+    "cameraFrames": 42,
+    "minimumTextHoldFrames": 120,
+    "overshootClamping": true,
+    "springConfigDesign": {
+      "damping": 100,
+      "stiffness": 100,
+      "mass": 1
+    },
+    "require_actual_60fps_preview": true
+  },
+  "pipeline": {
+    "meaning": "delivery_relationship_and_narrative_reveal",
+    "nodeIds": [
+      "idea",
+      "prompt",
+      "codex",
+      "source",
+      "build",
+      "image",
+      "nginx",
+      "container",
+      "proxy",
+      "https",
+      "demo",
+      "github",
+      "project"
+    ],
+    "labels": [
+      "IDEA",
+      "PROMPT",
+      "CODEX",
+      "SOURCE CODE",
+      "ASTRO BUILD",
+      "DOCKER IMAGE",
+      "NGINX",
+      "CONTAINER",
+      "REVERSE PROXY",
+      "HTTPS",
+      "LIVE DEMO",
+      "GITHUB",
+      "XICHUGEEK PROJECT"
+    ],
+    "visualStates": [
+      "gray",
+      "active",
+      "pass"
+    ],
+    "passRequires": [
+      "evidenceIds",
+      "statusBasis",
+      "scope",
+      "historyPhase"
+    ],
+    "layout": {
+      "kind": "fixed_serpentine_4_columns",
+      "nodeWidth": 344,
+      "nodeHeight": 118,
+      "columnsX": [
+        120,
+        560,
+        1000,
+        1440
+      ],
+      "rowsY": [
+        152,
+        342,
+        532,
+        722
+      ],
+      "nodeCoordinates": [
+        [
+          120,
+          152
+        ],
+        [
+          560,
+          152
+        ],
+        [
+          1000,
+          152
+        ],
+        [
+          1440,
+          152
+        ],
+        [
+          1440,
+          342
+        ],
+        [
+          1000,
+          342
+        ],
+        [
+          560,
+          342
+        ],
+        [
+          120,
+          342
+        ],
+        [
+          120,
+          532
+        ],
+        [
+          560,
+          532
+        ],
+        [
+          1000,
+          532
+        ],
+        [
+          1440,
+          532
+        ],
+        [
+          1440,
+          722
+        ]
+      ]
+    }
+  },
+  "components": {
+    "XGPrompt": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "quoteId",
+        "quoteLines",
+        "attachmentLabel",
+        "focusLines",
+        "verifiedQuote"
+      ],
+      "guard": "No fabricated historical input or typing. Attachment identity visible."
+    },
+    "XGTerminal": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "media",
+        "commandRect",
+        "resultRect"
+      ],
+      "guard": "Verified media required; never synthesize validation output."
+    },
+    "XGBrowser": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "media",
+        "publicDomain",
+        "viewport",
+        "safeSourceBounds"
+      ],
+      "guard": "Verified clean capture only; no fabricated page."
+    },
+    "XGCode": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "verifiedExcerpt",
+        "sourceFile",
+        "sourceVersion",
+        "lineRange",
+        "highlightLines"
+      ],
+      "guard": "Verified 5-15 line excerpts; label excerpts."
+    },
+    "XGDiff": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "verifiedDiffMedia",
+        "verifiedPatch",
+        "sourceVersion",
+        "focusChange"
+      ],
+      "guard": "No invented edit/diff."
+    },
+    "XGNode": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "nodeId",
+        "label",
+        "state",
+        "statusBasis",
+        "historyPhase"
+      ]
+    },
+    "XGFlow": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "from",
+        "to",
+        "purpose",
+        "direction",
+        "progress",
+        "returnPath"
+      ],
+      "guard": "Separate artifact flow from HTTP request/response."
+    },
+    "XGPipeline": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "projectId",
+        "nodes",
+        "fixedLayout",
+        "activeNode",
+        "camera",
+        "revealedIds"
+      ]
+    },
+    "XGStatus": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "state",
+        "label",
+        "basis",
+        "scope"
+      ]
+    },
+    "XGChapter": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "chapterNumber",
+        "title",
+        "pipelineFocus",
+        "phaseLabel"
+      ]
+    },
+    "XGCallout": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "anchorRect",
+        "text",
+        "leader"
+      ]
+    },
+    "XGDeviceFrame": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "media",
+        "nativeViewport",
+        "displayRect",
+        "breakpointPlan"
+      ],
+      "guard": "Do not stretch a capture to fake responsive reflow."
+    },
+    "XGResultCard": {
+      "commonProps": [
+        "frame",
+        "fps",
+        "theme",
+        "sourceMode",
+        "evidenceIds",
+        "sourceCaption",
+        "privacyCheck",
+        "focusRect",
+        "subtitleSafeRect",
+        "entryFrames",
+        "holdFrames",
+        "exitFrames"
+      ],
+      "props": [
+        "title",
+        "verifiedFields",
+        "publicLink",
+        "basis",
+        "historyPhase"
+      ],
+      "guard": "No raw restricted reports or private configuration."
+    }
+  },
+  "qualityTargets": {
+    "TEMPLATE_LOOK": {
+      "expected": "NO",
+      "actual": "NOT_ASSESSED"
+    },
+    "CHEAP_AI_LOOK": {
+      "expected": "NO",
+      "actual": "NOT_ASSESSED"
+    },
+    "PPT_LOOK": {
+      "expected": "NO",
+      "actual": "NOT_ASSESSED"
+    },
+    "INCONSISTENT_STYLE": {
+      "expected": "NO",
+      "actual": "NOT_ASSESSED"
+    },
+    "EXCESSIVE_EFFECTS": {
+      "expected": "NO",
+      "actual": "NOT_ASSESSED"
+    },
+    "UNREADABLE_TEXT": {
+      "expected": "NO",
+      "actual": "NOT_ASSESSED"
+    },
+    "LOW_RES_CAPTURE": {
+      "expected": "NO",
+      "actual": "NOT_ASSESSED"
+    },
+    "ANIMATION_JANK": {
+      "expected": "NO",
+      "actual": "NOT_ASSESSED"
+    },
+    "FAKE_TECH_VISUAL": {
+      "expected": "NO",
+      "actual": "NOT_ASSESSED"
+    },
+    "PRIVACY_LEAK": {
+      "expected": "NO",
+      "actual": "NOT_ASSESSED"
+    }
+  }
+}
